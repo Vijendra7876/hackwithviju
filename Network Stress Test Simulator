@@ -1,0 +1,50 @@
+# create a simulator 
+set ns [new Simulator]
+
+# create trace file 
+set tracefile [open project.tr w]
+$ns trace-all $tracefile
+
+#name file creation 
+set namfile [open project.nam w]
+$ns namtrace-all $namfile 
+
+#finish procedure
+proc finish {} {
+global ns tracefile namfile 
+$ns flush-trace
+close $tarcefile 
+close $namfile 
+exec nam project.nam &
+exit 0
+}
+
+#node creation  
+set n1 [$ns node]
+set n2 [$ns nodegg]
+
+#connection
+
+$ns duplex-link $n1 $n2 2ms Droptail 
+
+#agent creation 
+set udp [new Agent/UDP ]
+$ns attach-agent $n1 $udp 
+
+set null [ new Agent/Null ]
+$ns attach-agent $ns $null 
+
+$nns connect $udp $null 
+
+#generate the traffic 
+set cbrproject [ new Application/Traffic/CBR]
+$cbrproject attach-agent $udp
+
+# start traffic 
+
+$ns at 0.1 "$cbrproject start"
+$ns at 4.5 "$cbrproject stop"
+
+$ns at 5.0 "finish"	
+
+$ns run  
